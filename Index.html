@@ -1,0 +1,454 @@
+import React, { useState, useEffect } from 'react';
+import { Film, Star, Award, Ticket, Clapperboard, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+
+// --- DATA: The Script ---
+const dialogues = [
+  {
+    id: 1,
+    text: "Kitne aadmi the?",
+    options: ["Sholay", "Deewaar", "Zanjeer", "Don"],
+    answer: "Sholay",
+    context: "Gabbar Singh asking Sambha"
+  },
+  {
+    id: 2,
+    text: "Mere paas gaadi hai, bangla hai, paisa hai... tumhare paas kya hai?",
+    options: ["Amitabh Bachchan", "Dharmendra", "Shashi Kapoor", "Vinod Khanna"],
+    answer: "Shashi Kapoor",
+    context: "The iconic confrontation in Deewaar"
+  },
+  {
+    id: 3,
+    text: "Mogambo khush hua.",
+    options: ["Amrish Puri", "Kulbhushan Kharbanda", "Prem Chopra", "Danny Denzongpa"],
+    answer: "Amrish Puri",
+    context: "Mr. India's legendary villain"
+  },
+  {
+    id: 4,
+    text: "Bade bade deshon mein aisi chhoti chhoti baatein hoti rehti hai, Senorita.",
+    options: ["Kuch Kuch Hota Hai", "Dilwale Dulhania Le Jayenge", "Mohabbatein", "Kal Ho Naa Ho"],
+    answer: "Dilwale Dulhania Le Jayenge",
+    context: "Raj to Simran"
+  },
+  {
+    id: 5,
+    text: "Pushpa, I hate tears.",
+    options: ["Rajesh Khanna", "Dev Anand", "Dilip Kumar", "Shammi Kapoor"],
+    answer: "Rajesh Khanna",
+    context: "Amar Prem"
+  },
+  {
+    id: 6,
+    text: "Don ko pakadna mushkil hi nahi, namumkin hai.",
+    options: ["Don", "Agneepath", "Shaan", "Muqaddar Ka Sikandar"],
+    answer: "Don",
+    context: "11 mulkon ki police is waiting"
+  },
+  {
+    id: 7,
+    text: "Thappad se darr nahi lagta sahab, pyaar se lagta hai.",
+    options: ["Sonakshi Sinha", "Kareena Kapoor", "Priyanka Chopra", "Deepika Padukone"],
+    answer: "Sonakshi Sinha",
+    context: "Dabangg"
+  },
+  {
+    id: 8,
+    text: "Picture abhi baaki hai mere dost.",
+    options: ["Om Shanti Om", "Chennai Express", "Happy New Year", "Ra.One"],
+    answer: "Om Shanti Om",
+    context: "SRK's philosophy"
+  },
+  {
+    id: 9,
+    text: "Main apni favorite hoon.",
+    options: ["Jab We Met", "Love Aaj Kal", "Cocktail", "Heroine"],
+    answer: "Jab We Met",
+    context: "Geet's self-love"
+  },
+  {
+    id: 10,
+    text: "Rishte mein toh hum tumhare baap lagte hain, naam hai Shahenshah.",
+    options: ["Amitabh Bachchan", "Shatrughan Sinha", "Rajnikanth", "Mithun Chakraborty"],
+    answer: "Amitabh Bachchan",
+    context: "Shahenshah"
+  },
+  {
+    id: 11,
+    text: "All is well.",
+    options: ["Munna Bhai M.B.B.S.", "PK", "3 Idiots", "Lage Raho Munna Bhai"],
+    answer: "3 Idiots",
+    context: "Rancho's mantra"
+  },
+  {
+    id: 12,
+    text: "Utha le re baba, utha le... mereko nahi re, in dono ko utha le!",
+    options: ["Paresh Rawal", "Johnny Lever", "Rajpal Yadav", "Asrani"],
+    answer: "Paresh Rawal",
+    context: "Babu Bhaiya in Hera Pheri"
+  }
+];
+
+// --- COMPONENTS ---
+
+const Header = () => (
+  <header className="w-full bg-red-900 text-yellow-400 py-4 px-6 border-b-4 border-yellow-500 shadow-lg flex items-center justify-center relative overflow-hidden z-50">
+    <div className="absolute top-0 left-0 w-full h-1 bg-yellow-300 opacity-50 animate-pulse"></div>
+    <Film className="w-8 h-8 mr-3 animate-spin-slow" />
+    <h1 className="text-2xl md:text-4xl font-extrabold tracking-widest uppercase font-serif drop-shadow-md">
+      Filmy Quiz
+    </h1>
+    <Film className="w-8 h-8 ml-3 animate-spin-slow" />
+  </header>
+);
+
+const Curtain = ({ isOpen, children }) => (
+  <div className="relative w-full h-full min-h-screen bg-gray-900 overflow-hidden">
+    {children}
+    {/* Left Curtain */}
+    <div 
+      className={`absolute top-0 left-0 w-1/2 h-full bg-red-800 z-40 transition-transform duration-1000 ease-in-out border-r-4 border-yellow-600 shadow-2xl ${isOpen ? '-translate-x-full' : 'translate-x-0'}`}
+      style={{ backgroundImage: 'radial-gradient(circle, #991b1b 10%, #7f1d1d 90%)' }}
+    ></div>
+    {/* Right Curtain */}
+    <div 
+      className={`absolute top-0 right-0 w-1/2 h-full bg-red-800 z-40 transition-transform duration-1000 ease-in-out border-l-4 border-yellow-600 shadow-2xl ${isOpen ? 'translate-x-full' : 'translate-x-0'}`}
+      style={{ backgroundImage: 'radial-gradient(circle, #991b1b 10%, #7f1d1d 90%)' }}
+    ></div>
+  </div>
+);
+
+const StartScreen = ({ onStart }) => (
+  <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-6 space-y-8 animate-fade-in-up">
+    <div className="relative">
+      <div className="absolute -inset-4 bg-yellow-500 rounded-full opacity-20 animate-ping"></div>
+      <Clapperboard className="w-24 h-24 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
+    </div>
+    
+    <div className="space-y-4">
+      <h2 className="text-4xl md:text-6xl font-serif font-bold text-white tracking-wide">
+        Lights, Camera, <span className="text-yellow-400">Action!</span>
+      </h2>
+      <p className="text-xl text-gray-300 max-w-lg mx-auto">
+        Test your Bollywood knowledge. Guess the movie or the actor behind these legendary lines.
+      </p>
+    </div>
+
+    <button 
+      onClick={onStart}
+      className="group relative px-8 py-4 bg-yellow-500 text-red-900 font-bold text-xl rounded-lg shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:shadow-[0_0_30px_rgba(234,179,8,0.6)] hover:scale-105 transition-all duration-300 overflow-hidden cursor-pointer z-50"
+    >
+      <span className="relative z-10 flex items-center">
+        <Play className="w-6 h-6 mr-2 fill-current" /> ENTER THEATER
+      </span>
+      <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+    </button>
+  </div>
+);
+
+const GameScreen = ({ 
+  currentQuestion, 
+  questionIndex, 
+  totalQuestions, 
+  onAnswer, 
+  score, 
+  timeLeft, 
+  selectedOption, 
+  isAnswered 
+}) => {
+  return (
+    <div className="w-full max-w-4xl mx-auto p-4 md:p-8 flex flex-col items-center min-h-screen justify-center">
+      {/* HUD */}
+      <div className="w-full flex justify-between items-center mb-8 bg-black/40 p-4 rounded-xl border border-yellow-500/30 backdrop-blur-sm">
+        <div className="flex items-center text-yellow-400">
+          <Ticket className="w-6 h-6 mr-2" />
+          <span className="font-mono text-xl">Scene: {questionIndex + 1}/{totalQuestions}</span>
+        </div>
+        <div className="flex items-center text-yellow-400 font-bold text-2xl">
+          <span className={`mr-2 ${timeLeft <= 5 ? 'text-red-500 animate-pulse' : ''}`}>{timeLeft}s</span>
+        </div>
+        <div className="flex items-center text-yellow-400">
+          <Star className="w-6 h-6 mr-2 fill-current" />
+          <span className="font-mono text-xl">{score}</span>
+        </div>
+      </div>
+
+      {/* Question Card */}
+      <div className="w-full bg-white/5 backdrop-blur-md rounded-2xl border-2 border-yellow-600/50 p-6 md:p-10 shadow-2xl relative mb-8 group">
+        <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-red-900 px-6 py-1 rounded-full font-bold text-sm uppercase tracking-wider shadow-lg">
+          Dialogue
+        </div>
+        
+        <div className="text-center space-y-6">
+          <h3 className="text-2xl md:text-4xl text-white font-serif leading-relaxed italic drop-shadow-lg">
+            "{currentQuestion.text}"
+          </h3>
+        </div>
+      </div>
+
+      {/* Options Grid */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        {currentQuestion.options.map((option, idx) => {
+          let btnClass = "bg-gray-800 hover:bg-gray-700 border-gray-600 text-white"; // Default
+          
+          if (isAnswered) {
+            if (option === currentQuestion.answer) {
+              btnClass = "bg-green-600 border-green-400 text-white shadow-[0_0_15px_rgba(22,163,74,0.5)] scale-105";
+            } else if (option === selectedOption) {
+              btnClass = "bg-red-600 border-red-400 text-white opacity-80";
+            } else {
+              btnClass = "bg-gray-800 border-gray-700 text-gray-500 opacity-50";
+            }
+          }
+
+          return (
+            <button
+              key={idx}
+              onClick={() => !isAnswered && onAnswer(option)}
+              disabled={isAnswered}
+              className={`
+                relative p-4 md:p-6 rounded-xl border-2 text-lg md:text-xl font-medium transition-all duration-300
+                flex items-center justify-center text-center shadow-lg
+                ${btnClass}
+                ${!isAnswered ? 'hover:-translate-y-1 hover:shadow-xl hover:border-yellow-500/50' : ''}
+              `}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ResultScreen = ({ score, totalQuestions, onRestart }) => {
+  const percentage = (score / totalQuestions) * 100;
+  
+  let verdict = "";
+  let message = "";
+  let icon = null;
+
+  if (percentage === 100) {
+    verdict = "ALL-TIME BLOCKBUSTER";
+    message = "Superhit! You are the true King of Bollywood!";
+    icon = <Award className="w-20 h-20 text-yellow-400 mb-4 animate-bounce" />;
+  } else if (percentage >= 80) {
+    verdict = "SUPERHIT";
+    message = "Fantastic! The audience loves you.";
+    icon = <Star className="w-20 h-20 text-yellow-400 mb-4 animate-pulse" />;
+  } else if (percentage >= 50) {
+    verdict = "AVERAGE";
+    message = "Not bad, but picture abhi baaki hai mere dost.";
+    icon = <Film className="w-20 h-20 text-gray-400 mb-4" />;
+  } else {
+    verdict = "FLOP";
+    message = "Better luck next time! Re-release needed.";
+    icon = <RotateCcw className="w-20 h-20 text-red-400 mb-4" />;
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6 animate-fade-in-up">
+      {icon}
+      
+      <h2 className="text-4xl md:text-6xl font-serif font-bold text-yellow-500 mb-2 tracking-tighter drop-shadow-md">
+        {verdict}
+      </h2>
+      
+      <p className="text-xl text-gray-300 mb-8 font-light italic">"{message}"</p>
+
+      <div className="bg-black/50 p-8 rounded-2xl border border-yellow-600/30 mb-8 w-full max-w-sm backdrop-blur-sm">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-gray-400 uppercase tracking-widest text-xs">Total Score</span>
+          <span className="text-3xl font-bold text-white">{score * 100} Cr</span>
+        </div>
+        <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 transition-all duration-1000 ease-out"
+            style={{ width: `${percentage}%` }}
+          ></div>
+        </div>
+        <div className="mt-2 text-right text-xs text-gray-500">
+          {score} out of {totalQuestions} correct
+        </div>
+      </div>
+
+      <button 
+        onClick={onRestart}
+        className="px-8 py-3 bg-red-700 hover:bg-red-600 text-white font-bold rounded-full transition-colors flex items-center shadow-lg border-2 border-red-500 cursor-pointer z-50"
+      >
+        <RotateCcw className="w-5 h-5 mr-2" /> REPLAY MOVIE
+      </button>
+    </div>
+  );
+};
+
+// --- MAIN APP COMPONENT ---
+
+export default function App() {
+  const [gameState, setGameState] = useState('start'); // start, playing, end
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(15);
+  // CRITICAL FIX: Curtain starts OPEN (true) so we can see the start menu.
+  const [curtainOpen, setCurtainOpen] = useState(true);
+  
+  // Interaction state
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+
+  // Timer Effect
+  useEffect(() => {
+    let timer;
+    if (gameState === 'playing' && timeLeft > 0 && !isAnswered) {
+      timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
+    } else if (timeLeft === 0 && !isAnswered) {
+      handleAnswer(null); // Timeout counts as wrong/null answer
+    }
+    return () => clearTimeout(timer);
+  }, [gameState, timeLeft, isAnswered]);
+
+  const startGame = () => {
+    // 1. Close Curtain
+    setCurtainOpen(false);
+    
+    // 2. Wait for curtain to close, then change state
+    setTimeout(() => {
+      setGameState('playing');
+      setScore(0);
+      setCurrentQuestionIndex(0);
+      resetQuestion();
+      
+      // 3. Open Curtain to reveal game
+      setTimeout(() => {
+          setCurtainOpen(true);
+      }, 500);
+    }, 1000);
+  };
+
+  const resetQuestion = () => {
+    setTimeLeft(15);
+    setIsAnswered(false);
+    setSelectedOption(null);
+  };
+
+  const handleAnswer = (option) => {
+    setIsAnswered(true);
+    setSelectedOption(option);
+    
+    const isCorrect = option === dialogues[currentQuestionIndex].answer;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+    }
+
+    // Delay before next question
+    setTimeout(() => {
+      if (currentQuestionIndex < dialogues.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+        resetQuestion();
+      } else {
+        // Transition to End Screen
+        setCurtainOpen(false);
+        setTimeout(() => {
+            setGameState('end');
+            setTimeout(() => setCurtainOpen(true), 500);
+        }, 1000);
+      }
+    }, 2000);
+  };
+
+  const restartGame = () => {
+    setCurtainOpen(false);
+    setTimeout(() => {
+      setGameState('start');
+      setTimeout(() => setCurtainOpen(true), 500);
+    }, 1000);
+  };
+
+  return (
+    <div className="font-sans min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+      <Header />
+      
+      <Curtain isOpen={curtainOpen}>
+        <main className="flex-grow relative z-10 overflow-y-auto custom-scrollbar">
+          {/* Background Texture */}
+          <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" 
+               style={{ 
+                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
+               }}>
+          </div>
+
+          <div className="relative z-10 min-h-[calc(100vh-80px)] flex flex-col">
+            {gameState === 'start' && <StartScreen onStart={startGame} />}
+            
+            {gameState === 'playing' && (
+              <GameScreen 
+                currentQuestion={dialogues[currentQuestionIndex]}
+                questionIndex={currentQuestionIndex}
+                totalQuestions={dialogues.length}
+                onAnswer={handleAnswer}
+                score={score}
+                timeLeft={timeLeft}
+                selectedOption={selectedOption}
+                isAnswered={isAnswered}
+              />
+            )}
+            
+            {gameState === 'end' && (
+              <ResultScreen 
+                score={score} 
+                totalQuestions={dialogues.length}
+                onRestart={restartGame}
+              />
+            )}
+          </div>
+        </main>
+      </Curtain>
+
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Poppins:wght@300;400;600;700&display=swap');
+        
+        body {
+          font-family: 'Poppins', sans-serif;
+        }
+        h1, h2, h3, .font-serif {
+          font-family: 'Playfair Display', serif;
+        }
+        
+        .animate-spin-slow {
+          animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out;
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #1f2937; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #ca8a04; 
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #a16207; 
+        }
+      `}</style>
+    </div>
+  );
+}
+
+
